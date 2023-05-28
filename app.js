@@ -1,59 +1,40 @@
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 3001;
+// Import required modules
+const http = require('http');
+const fs = require('fs');
+const pixelmatch = require('pixelmatch');
 
-app.get("/", (req, res) => res.type('html').send(html));
+// Create an HTTP server
+const server = http.createServer((req, res) => {
+  // Handle requests
+  if (req.url === '/compare') {
+    // Load images and perform comparison
+    const img1 = fs.readFileSync('images/image1/triangles.png');
+    const img2 = fs.readFileSync('images/image2/triangles.png');
+    const { width, height } = getImageDimensions(img1); // Replace with your method to get image dimensions
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+    const diff = new Uint8Array(width * height * 4); // Create an array to store diff data
+    const numDiffPixels = pixelmatch(img1, img2, diff, width, height, { threshold: 0.2 });
 
+    // Do something with the comparison result
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ numDiffPixels }));
+  } else {
+    // Handle other requests
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+});
 
-const html = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Hello from Render!</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    <script>
-      setTimeout(() => {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          disableForReducedMotion: true
-        });
-      }, 500);
-    </script>
-    <style>
-      @import url("https://p.typekit.net/p.css?s=1&k=vnd5zic&ht=tk&f=39475.39476.39477.39478.39479.39480.39481.39482&a=18673890&app=typekit&e=css");
-      @font-face {
-        font-family: "neo-sans";
-        src: url("https://use.typekit.net/af/00ac0a/00000000000000003b9b2033/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"), url("https://use.typekit.net/af/00ac0a/00000000000000003b9b2033/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"), url("https://use.typekit.net/af/00ac0a/00000000000000003b9b2033/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");
-        font-style: normal;
-        font-weight: 700;
-      }
-      html {
-        font-family: neo-sans;
-        font-weight: 700;
-        font-size: calc(62rem / 16);
-      }
-      body {
-        background: white;
-      }
-      section {
-        border-radius: 1em;
-        padding: 1em;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        margin-right: -50%;
-        transform: translate(-50%, -50%);
-      }
-    </style>
-  </head>
-  <body>
-    <section>
-      Hello from Render!
-    </section>
-  </body>
-</html>
-`
+// Start the server
+const port = process.env.PORT || 3000; // Use the port provided by Render.com or fallback to 3000
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+// Helper function to get image dimensions
+function getImageDimensions(imageBuffer) {
+  // Implement your own logic to get image dimensions here
+  // You can use additional libraries like 'sharp' or 'jimp' for image processing if needed
+  // Return an object with 'width' and 'height' properties
+  return { width: 0, height: 0 };
+}
